@@ -1,0 +1,12 @@
+tau: 0.0104983
+dt: 0.000958658
+beta: 5.47775
+theta: 0.0318855
+h: -0.401829
+w_exc: 2.51846
+sigma_exc: 4.39481
+w_inh: 1.7569
+sigma_inh: 7.87281
+intensity_scale_factor: 5.548
+gaussian_stimulus_width: 4
+N: 50
