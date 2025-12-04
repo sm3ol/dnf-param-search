@@ -1,0 +1,33 @@
+# ---------------------------
+# DNF core (inner loop)
+# ---------------------------
+N: 100                 # field size (bins) — typically fixed per dataset; not tuned unless in a separate study
+tau: 0.0035            # s
+dt: 0.00035            # s (ensure alpha = dt/tau stays <~ 0.2)
+h: -0.35               # resting level
+beta: 12.0             # logistic slope (steep; you reported it works)
+theta: 0.1             # activation threshold
+
+w_exc: 2.0             # excitation gain
+sigma_exc: 1.4         # excitation width (bins)
+w_inh: 1.5             # inhibition gain
+sigma_inh: 14.0        # inhibition width (bins); keep > sigma_exc
+
+boundary: wrap         # wrap|reflect|nearest (SciPy ndimage mode)
+kernel_norm: zero_mean_l2 # none|zero_mean|zero_mean_l2 (we recommend zero_mean)
+max_step: 0.5          # per-step Δu cap (this was 'cap' in your list)
+
+# ---------------------------
+# Stimulus shaping (adapter-side, part of inner-loop co-optimization)
+# ---------------------------
+stim_gain: 2.5                 # your working value
+intensity_scale_factor: 2.5    # mirror of stim_gain for harness compatibility
+stim_bp_sigma: 10.0            # band-pass (or LoG) width, px
+stim_smooth_sigma: 1.0         # pre-smoothing sigma, px
+stim_topq_start: 0.97          # start quantile for top-q masking
+stim_topq_max: 0.995           # max quantile cap
+stim_edge_clip: 4.0            # pixels to crop near borders before peak-pick
+
+# Required by the Gaussian stimulus generator (not in your list; set to your default)
+gaussian_stimulus_width: 5     # bins
+

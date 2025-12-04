@@ -1,0 +1,29 @@
+datasets:
+  ycbsight_real:
+    adapter: ycbsight
+    root: "C:/Datasets/YCBSight-Real"
+    split_pattern:
+      test: "004_sugar_box/gelsight"   # <-- direct relative folder under root
+    mapping:
+      N: 100
+      projector: "raster_ring"
+    adapter_opts:
+      intensity_scale_mode: p95
+      intensity_scale_floor: 0.0
+      intensity_scale_ceil: 3.0
+      input_noise_std: 0.0
+
+
+  dvs_grasping:
+    adapter: dvs_grasping
+    root: "D:/data/DVS-GraspingDataSet"
+    split_pattern:
+      train: "train/*"
+      test:  "test/*"
+    davis:
+      resolution: [346, 260]
+      bin_ms: 1.0
+      polarity: "both"
+    mapping:
+      N: 100
+      projector: "angle_ring"

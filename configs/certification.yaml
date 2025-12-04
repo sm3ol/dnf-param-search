@@ -1,0 +1,89 @@
+# # Acceptance gates / targets (kept exactly as you provided)
+# min_peak: 0.35           # a.u.  (e.g., require ≥ 0.35 steady-state peak)
+# max_ripple: 0.03         # 3%    (tail ripple ceiling)
+# max_islands: 2.0         # allow up to 2 activation islands
+# max_fwhm_bins: 12.0      # peak width ceiling (FWHM, in bins)
+
+# # Pre-DNF targets (design-time goals; not search knobs)
+# pre_target_islands: 1.0
+# pre_target_fwhm_bins: 12.0
+
+# certification.yaml  (event-driven DNF gates)
+
+# # Latency
+# k90_ms: 7.0                # or 3.0 * tau_ms if you compute it
+# k99_ms: 12.0
+# # Stability
+# max_ripple: 0.05           # 5% ripple in the steady window
+# min_peak: 0.15
+# # Optional extras supported by your metrics pack:
+# overshoot_pct: 20.0        # if you add this check in bb_metrics later
+# centroid_jitter_px: 1.5    # if you add this check in bb_metrics later
+# # Shape/uniqueness (spatial)
+# min_fwhm_bins: 1
+# max_fwhm_bins: 80
+# max_islands: 5
+
+# certification.yaml
+use:
+  k90_ms: true
+  k99_ms: true
+  ripple_pct: true
+  min_peak: true
+  fwhm_bins: true
+  islands: true
+
+# Latency
+k90_ms: 7.0
+k99_ms: 12.0
+
+# Stability
+max_ripple: 0.05      # 5% (fraction OK too)
+min_peak: 0.15
+
+# Spatial
+fwhm_bins: [2, 30]
+max_islands: 3
+
+# Measurement options (optional)
+steady_window:
+  frac: 0.2
+  min_ms: 1.0
+
+
+######## Balance of performance and efficiency ########
+# # Latency
+# k90_ms: 7.0                # or 3.0 * tau_ms if you compute it
+# k99_ms: 12.0
+# # Stability
+# max_ripple: 0.05           # 5% ripple in the steady window
+# min_peak: 0.15
+# # Optional extras supported by your metrics pack:
+# overshoot_pct: 20.0        # if you add this check in bb_metrics later
+# centroid_jitter_px: 1.5    # if you add this check in bb_metrics later
+# # Shape/uniqueness (spatial)
+# min_fwhm_bins: 2
+# max_fwhm_bins: 30
+# max_islands: 2
+
+
+######## Aggressive of performance and efficiency ########
+
+# k90_ms: 5.0
+# k99_ms: 10.0
+# max_ripple: 0.03
+# min_peak: 0.20
+# min_fwhm_bins: 2
+# max_fwhm_bins: 20
+# max_islands: 2
+
+######## Relaxed / conservative balance of performance and efficiency ########
+
+
+# k90_ms: 10.0
+# k99_ms: 16.0
+# max_ripple: 0.08
+# min_peak: 0.10
+# min_fwhm_bins: 1
+# max_fwhm_bins: 40
+# max_islands: 3

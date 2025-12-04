@@ -1,0 +1,34 @@
+# ---- Python junk ----
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.log
+
+# ---- Virtual envs (if you ever add them) ----
+venv/
+.env/
+.venv/
+env/
+
+# ---- CMake / build directories ----
+cpp/build/
+cpp/param_data_structure/build/
+**/CMakeFiles/
+*.cmake
+*.exe
+*.obj
+*.pdb
+*.ilk
+
+# ---- Artifacts (runs, plots, etc.) ----
+artifacts/
+
+# ---- Python plots (reproducible) ----
+python_env/plots/
+
+# ---- Editor / OS noise ----
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
