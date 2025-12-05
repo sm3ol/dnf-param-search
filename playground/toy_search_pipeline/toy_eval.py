@@ -10,11 +10,16 @@ def clamp(x, lo, hi):
 
 
 def main():
-    if len(sys.argv) != 2:
-        print("Usage: toy_eval.py PARAMS_JSON", file=sys.stderr)
+    # Accept 1 or 2 arguments:
+    #   toy_eval.py PARAMS_JSON
+    #   toy_eval.py PARAMS_JSON METRICS_JSON_OUT
+    if not (2 <= len(sys.argv) <= 3):
+        print("Usage: toy_eval.py PARAMS_JSON [METRICS_JSON_OUT]", file=sys.stderr)
         sys.exit(1)
 
     params_path = sys.argv[1]
+    metrics_out_path = sys.argv[2] if len(sys.argv) == 3 else None
+
     with open(params_path, "r") as f:
         p = json.load(f)
 
@@ -34,11 +39,9 @@ def main():
 
     # ------------------------------------------------------------------
     # Toy formulas that *behave like* the real system, but are cheap.
-    # You can tweak these later if you want them closer to reality.
     # ------------------------------------------------------------------
 
-    # 1) Latencies k90_ms, k99_ms (smaller when tau & dt are small, intensity higher)
-    # Base scale ~ 60 ms when tau = 0.01, dt ≈ 0.001, intensity ≈ 7
+    # 1) Latencies k90_ms, k99_ms
     tau_ref = 0.010
     dt_ref = 0.001
     intensity_ref = 7.0
@@ -49,56 +52,53 @@ def main():
 
     base_k99 = 60.0 * tau_factor * (0.7 + 0.6 * dt_factor) * intensity_factor
 
-    # Add a small noise to avoid ties
     noise_k99 = random.gauss(0.0, 3.0)
     k99_ms = clamp(base_k99 + noise_k99, 5.0, 400.0)
 
-    # k90 is earlier than k99, roughly ~70% of it plus small noise
     noise_k90 = random.gauss(0.0, 2.0)
     k90_ms = clamp(0.7 * k99_ms + noise_k90, 1.0, k99_ms)
 
-    # 2) Ripple [%]: higher if excitation dominates inhibition, lower if sigma_inh >> sigma_exc.
+    # 2) Ripple [%]
     exc_inh_ratio = w_exc / max(w_inh, 1e-3)
-    sigma_gap = sigma_inh - sigma_exc  # larger gap = broader inhibition = less ripple
+    sigma_gap = sigma_inh - sigma_exc
 
     base_ripple = 1.0 * (exc_inh_ratio - 1.0) - 0.08 * (sigma_gap - 4.0)
-    # Slight dependence on beta/theta (steeper / lower threshold can increase ripple)
     base_ripple += 0.05 * (beta - 5.0) - 5.0 * (theta - 0.05)
 
     noise_ripple = random.gauss(0.0, 0.3)
     ripple = clamp(base_ripple + noise_ripple, 0.0, 10.0)  # percent
 
-    # 3) Peak activation: grows with w_exc & intensity, drops if bias too negative or inhibition too strong
-    # h is negative; less negative (closer to 0) usually gives higher peak.
+    # 3) Peak activation
     h_term = (h + 0.6) / 0.55  # h in [-0.60, -0.05] -> roughly [0, 1]
-    peak_raw = 0.4 \
-        + 0.10 * (w_exc - 1.5) \
-        + 0.05 * (intensity - intensity_ref) \
-        + 0.15 * h_term \
+    peak_raw = (
+        0.4
+        + 0.10 * (w_exc - 1.5)
+        + 0.05 * (intensity - intensity_ref)
+        + 0.15 * h_term
         - 0.07 * (w_inh - 1.0)
+    )
 
     noise_peak = random.gauss(0.0, 0.05)
     peak = clamp(peak_raw + noise_peak, 0.0, 1.5)
 
-    # 4) Steps to settle: roughly k99 / dt, plus a mild dependency on N and gauss_width
+    # 4) Steps to settle
     dt_ms = dt * 1000.0
     if dt_ms <= 0:
         steps = 1000.0
     else:
         steps = k99_ms / dt_ms
 
-    # Adjust steps by spatial size and probe width (bigger maps need more iterations)
-    steps *= (0.8 + 0.4 * ((N / 100.0)))
+    steps *= (0.8 + 0.4 * (N / 100.0))
     steps *= (0.9 + 0.1 * (gauss_width / 7.0))
 
     noise_steps = random.gauss(0.0, 10.0)
     steps = clamp(steps + noise_steps, 10.0, 5000.0)
 
     # ------------------------------------------------------------------
-    # Certification gates from the problem statement:
-    #   - k99_ms <= 100 ms (speed gate)
-    #   - peak   >= 0.60   (SNR gate)
-    #   - ripple <= 2%     (stability gate)
+    # Certification gates:
+    #   - k99_ms <= 100 ms
+    #   - peak   >= 0.60
+    #   - ripple <= 2 %
     # ------------------------------------------------------------------
     pass_gate = (k99_ms <= 100.0) and (peak >= 0.60) and (ripple <= 2.0)
 
@@ -111,8 +111,14 @@ def main():
         "pass": bool(pass_gate),
     }
 
-    # Print as JSON to stdout for the C++ side to parse
-    print(json.dumps(metrics))
+    # Print JSON to stdout
+    metrics_json = json.dumps(metrics)
+    print(metrics_json)
+
+    # Optionally also write to a file if a path was given
+    if metrics_out_path is not None:
+        with open(metrics_out_path, "w") as f_out:
+            f_out.write(metrics_json)
 
 
 if __name__ == "__main__":
